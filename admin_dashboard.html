@@ -7,30 +7,148 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { background: #0f0c29; color: white; font-family: 'Poppins', sans-serif; padding: 20px; }
-        .header { display: flex; justify-content: space-between; margin-bottom: 30px; border-bottom: 1px solid #333; padding-bottom: 15px; }
+        body { background: #0f0c29; color: white; font-family: 'Poppins', sans-serif; padding: 20px; margin: 0; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid #333; padding-bottom: 15px; }
         .logout { background: #e74c3c; color: white; border: none; padding: 8px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px; }
-        .card { background: linear-gradient(145deg, #1e1e2f, #161625); padding: 25px; border-radius: 20px; text-align: center; cursor: pointer; border: 1px solid rgba(255,255,255,0.05); transition: 0.3s; }
+        
+        .card { 
+            background: linear-gradient(145deg, #1e1e2f, #161625); 
+            padding: 25px; 
+            border-radius: 20px; 
+            text-align: center; 
+            cursor: pointer; 
+            border: 1px solid rgba(255,255,255,0.05); 
+            transition: 0.3s;
+            position: relative; /* Added for notification positioning */
+        }
         .card:hover { transform: translateY(-5px); border-color: #00f260; }
         .card i { font-size: 2.5rem; margin-bottom: 15px; }
+
+        /* --- NEW NOTIFICATION BADGE STYLE --- */
+        .notification-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #e74c3c;
+            color: white;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+            box-shadow: 0 0 10px rgba(231, 76, 60, 0.7);
+            display: none; /* Hidden by default */
+        }
     </style>
 </head>
 <body>
-    <div class="header"><h2>🔥 Master Control</h2><button class="logout" onclick="logout()">Logout</button></div>
-
-    <div class="grid">
-        <div class="card" onclick="window.location.href='admin_activation.html'"><i class="fas fa-bolt" style="color:#f1c40f;"></i><h4>Activations</h4></div>
-        <div class="card" onclick="window.location.href='admin_withdraw.html'"><i class="fas fa-wallet" style="color:#00f260;"></i><h4>Withdrawals</h4></div>
-        <div class="card" onclick="window.location.href='admin_tasks.html'"><i class="fas fa-tasks" style="color:#3498db;"></i><h4>Manage Tasks</h4></div>
-        <div class="card" onclick="window.location.href='admin_users.html'"><i class="fas fa-users" style="color:#9b59b6;"></i><h4>User List</h4></div>
-        <div class="card" onclick="window.location.href='admin_vip.html'"><i class="fas fa-crown" style="color:#e67e22;"></i><h4>VIP Levels</h4></div>
-        <div class="card" onclick="window.location.href='admin_settings.html'"><i class="fas fa-cogs" style="color:#ecf0f1;"></i><h4>Settings</h4></div>
+    <div class="header">
+        <h2>🔥 Master Control</h2>
+        <button class="logout" onclick="logout()">Logout</button>
     </div>
 
+    <div class="grid">
+        <div class="card" onclick="window.location.href='admin_activation.html'">
+            <span class="notification-badge" id="activation-count">0</span>
+            <i class="fas fa-bolt" style="color:#f1c40f;"></i>
+            <h4>Activations</h4>
+        </div>
+        <div class="card" onclick="window.location.href='admin_withdraw.html'">
+            <span class="notification-badge" id="withdraw-count">0</span>
+            <i class="fas fa-wallet" style="color:#00f260;"></i>
+            <h4>Withdrawals</h4>
+        </div>
+        <div class="card" onclick="window.location.href='admin_tasks.html'">
+            <i class="fas fa-tasks" style="color:#3498db;"></i>
+            <h4>Manage Tasks</h4>
+        </div>
+        <div class="card" onclick="window.location.href='admin_users.html'">
+            <i class="fas fa-users" style="color:#9b59b6;"></i>
+            <h4>User List</h4>
+        </div>
+        <div class="card" onclick="window.location.href='admin_vip.html'">
+            <i class="fas fa-crown" style="color:#e67e22;"></i>
+            <h4>VIP Levels</h4>
+        </div>
+        <div class="card" onclick="window.location.href='admin_settings.html'">
+            <i class="fas fa-cogs" style="color:#ecf0f1;"></i>
+            <h4>Settings</h4>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
     <script>
-        if(localStorage.getItem('admin_logged') !== 'true') window.location.href = 'admin_login.html';
-        function logout() { localStorage.removeItem('admin_logged'); window.location.href = 'admin_login.html'; }
+        // আপনার Firebase প্রজেক্টের কনফিগারেশন দিন
+        const firebaseConfig = {
+          apiKey: "AIzaSyDzEo1rLM6xwz8O4iEYIOvFi4JZQG_TJ0g",
+          authDomain: "art-paid-work001.firebaseapp.com",
+          databaseURL: "https://art-paid-work001-default-rtdb.firebaseio.com",
+          projectId: "art-paid-work001",
+          storageBucket: "art-paid-work001.firebasestorage.app",
+          messagingSenderId: "524647364992",
+          appId: "1:524647364992:web:c91b2dc55ab9b30d3ba965"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.database();
+
+        // Check if admin is logged in using Firebase Auth
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                // User is signed in, load notifications
+                loadNotificationCounts();
+            } else {
+                // No user is signed in, redirect to login page
+                window.location.href = 'admin_login.html';
+            }
+        });
+        
+        function loadNotificationCounts() {
+            const activationBadge = document.getElementById('activation-count');
+            const withdrawBadge = document.getElementById('withdraw-count');
+
+            // --- Listen for pending activation requests ---
+            // Assuming you have an 'activation_requests' node
+            // This query efficiently gets only pending requests
+            const activationRef = db.ref('activation_requests').orderByChild('status').equalTo('pending');
+            activationRef.on('value', snapshot => {
+                const count = snapshot.numChildren(); // Get the number of pending requests
+                if (count > 0) {
+                    activationBadge.innerText = count;
+                    activationBadge.style.display = 'flex';
+                } else {
+                    activationBadge.style.display = 'none';
+                }
+            });
+
+            // --- Listen for pending withdraw requests ---
+            const withdrawRef = db.ref('withdraw_requests').orderByChild('status').equalTo('pending');
+            withdrawRef.on('value', snapshot => {
+                const count = snapshot.numChildren();
+                if (count > 0) {
+                    withdrawBadge.innerText = count;
+                    withdrawBadge.style.display = 'flex';
+                } else {
+                    withdrawBadge.style.display = 'none';
+                }
+            });
+        }
+
+        function logout() {
+            auth.signOut().then(() => {
+                // The onAuthStateChanged listener will automatically redirect to the login page.
+                console.log('Admin logged out');
+            });
+        }
     </script>
 </body>
-                                                                                </html>
+    </html>
+    
